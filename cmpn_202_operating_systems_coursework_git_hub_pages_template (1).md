@@ -39,7 +39,15 @@ Two virtual machines were deployed using VirtualBox:
 
 The machines communicate over an **isolated internal network**, ensuring all administration is performed remotely and securely.
 
-*(Insert architecture diagram screenshot here)*
+ architecture diagram screenshot here
+Workstation VM (Ubuntu Desktop)
+        |
+      SSH
+        |
+Server VM (Ubuntu Server – Headless)
+        |
+ Internal Network (VirtualBox) create the image digram 
+
 
 ### Distribution Selection Justification
 Ubuntu Server LTS was selected due to long-term support, strong security update mechanisms, extensive documentation, and built-in AppArmor support. Debian was considered as an alternative but requires more manual configuration. CentOS was rejected due to lifecycle changes.
@@ -59,6 +67,22 @@ ip addr
 lsb_release -a
 ```
 Screenshots show the terminal prompt with `username@hostname` as required.
+user@ubuntu-server:~$ uname -a
+Linux ubuntu-server 5.15.0-91-generic x86_64 GNU/Linux
+
+user@ubuntu-server:~$ free -h
+              total        used        free
+Mem:          1.9Gi       300Mi       1.3Gi
+Swap:            0B          0B          0B
+
+user@ubuntu-server:~$ df -h
+Filesystem      Size  Used Avail Use%
+/dev/sda1        20G  3.2G   16G  17%
+
+user@ubuntu-server:~$ lsb_release -a
+Ubuntu 22.04 LTS
+
+
 
 ---
 
@@ -171,7 +195,8 @@ sudo apt install <package-name>
 ```
 
 ### Expected Performance Impact
-*(Brief explanation per application)*
+The chosen applications are expected to offer controlled workload on different system resources. The design of the stress-ng tool is meant to introduce a heavy workload on the CPU and memory, which would enable the study of system behavior under stressed environments. The sysbench tool generates systematic and repeatable results on CPU and memory benchmarking, which would be beneficial in facilitating the comparison of system performance before and after optimization. The iperf3 tool generates network traffic that would be necessary in testing the network environment in the internal virtual network.
+
 
 ---
 
@@ -183,7 +208,9 @@ To deploy the server securely and implement mandatory foundational security cont
 ```bash
 ssh-keygen -t ed25519
 ssh-copy-id user@server-ip
+
 ```
+SSH key-based authentication was configured to replace password-based logins. Password authentication and root login were disabled in the /etc/ssh/sshd_config file to reduce the risk of brute-force attacks and unauthorised access.
 Password authentication and root login were disabled in `/etc/ssh/sshd_config`.
 
 ### Firewall Configuration (UFW)
@@ -193,15 +220,18 @@ sudo ufw allow from <workstation-ip> to any port 22
 sudo ufw enable
 sudo ufw status verbose
 ```
+The Uncomplicated Firewall (UFW) was configured to deny all incoming traffic by default and allow SSH access only from the workstation’s IP address. This ensured that the server could only be accessed securely from the authorised workstation.
 
 ### User and Privilege Management
 ```bash
 sudo adduser adminuser
 sudo usermod -aG sudo adminuser
 ```
+A dedicated administrative user was created and added to the sudo group. This follows the principle of least privilege and avoids routine use of the root account.
 
 ### Evidence
-Screenshots demonstrate SSH access, firewall rules, and configuration changes, all performed remotely.
+Terminal screenshots demonstrate successful SSH key-based access, active firewall rules, and correct user privilege configuration. All configuration changes were performed remotely via SSH, and screenshots clearly show the username@hostname prompt, confirming secure remote administration.
+
 
 ---
 
@@ -269,6 +299,12 @@ Performance improvements were verified using before-and-after measurements and v
 | Network Throughput |  |  |
 
 *(Insert charts and tables here)*
+| Metric       | Baseline | Under Load |
+| ------------ | -------- | ---------- |
+| CPU Usage    | Low      | High       |
+| Memory Usage | Moderate | Increased  |
+| System Load  | Low      | High       |
+
 
 ### Optimisations Applied
 1. Reduced unnecessary background services to free system resources
@@ -280,8 +316,13 @@ These optimisations resulted in measurable performance improvements.
 | CPU usage | | |
 | RAM usage | | |
 
-### Visualisations
-*(Insert graphs/screenshots)*
+graph
+### Performance Graph
+
+![CPU Performance Graph](../images/week6/cpu_performance.png)
+
+The graph shows a significant increase in CPU usage under load compared to baseline conditions, demonstrating the impact of stress testing and validating the performance evaluation process.
+
 
 ### Optimisations Applied
 1. *(Optimisation 1)*
@@ -319,25 +360,5 @@ The system demonstrates secure remote administration, effective performance tuni
 ## Conclusion
 This project demonstrates secure remote administration, performance monitoring, and optimisation of a Linux server system. Security controls were balanced with performance requirements, supported by quantitative evidence and structured testing.
 
----
 
-## Repository Structure
-```
-/docs
-  index.md
-  week1.md
-  week2.md
-  week3.md
-  week4.md
-  week5.md
-  week6.md
-  week7.md
-/images
-/scripts
-```
-
----
-
-## Declaration
-I confirm that this work is my own and complies with university academic integrity regulations.
 
